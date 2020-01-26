@@ -23,12 +23,39 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
 import javafx.event.*;
 
-/**
- * Hello world!
- *
- */
+
+
+//This is a particle potential simulator.
+//
+//The reason I'm writing this simulator is to develop some a system that can be used in a macro type of simulation. There are many
+//particle simulators out there. In so far as I have research(which isn't far) I have come across many nano-scale particle simulators 
+//and not many particle simulators that tries to simulate macro conditions. 
+//
+//There are many features pending and lacking at this moment, such as general relativity conditions, proper unit system, accurate physical 
+//representation such as heat, energy and so forth.
+//
+//In addition of the lack of these critical features, the simulator is also lacking in the ability to perform a high number of calculations
+//at a rapid speed, since it is written in Java, and java is slow. and It currently does not have cluster support.
+//
+//All being said and told, in the end this is a research project, an exploration of the limits of classical mechanics, and the trying of 
+//different variables. The software will rely heavily on potentials, such as Lennard Jones Potential, Newtons General Relativity Potenential
+//and custom made potentials.
+//
+//The goal is to hopefully represent the universe, and it's operations. Operations such as star formation, planetary motions, galaxy formation and shape,
+//a black hole or two colliding with each other, and maybe some quantum mechanics. A tall order I know, given the many short comings, yet what
+//the heck right?
+
+
+//The way the software works is that it will get it's different parameters from a .script file, load them.(which is currently not implemented). Run the 
+//Simulation using the potentials and weights, dump the particle locations in a file at a set interval and  then close the application.
+//Hopefully after a few minutes you will have a .xyz file that you can load in an animation software and look at.
+
+
 
 public class App extends Application {
+	
+	//I will place the temporary Application Settings in this block until I can write a propper .script load code.
+	//////////////////////////////////////////////
 
 	// Number of Particles in the system
 
@@ -38,182 +65,90 @@ public class App extends Application {
 
 	private static final double spread = 200;
 
-	// Number of Steps in Simulation
+	// Number of Steps in Simulation the higher this number the more fine rich detail the timesteps will have
 
-	private static final Double steps = 1E+9;
+	private static final Double steps = 1000.0;//1E+9;
+	
+	//Difference between potentials 
+	
+	private static final Double diff = 0.00000001; // 1E-14;
 
-	// Width of 3D display
-	private static final int WIDTH = 1400;
-	private static final int HEIGHT = 800;
+	//Dump interval
+	
+	private static final int dumpInterval = 50; 
+	
+	//Dump filename
+	
+	
+	String dumpFilename = "file.xyz";
 
-	// Display Version
-	String version = "2D";
 
-	// JavaFX 3D spheres to represent particles in 3d Mode.
+  /////////////////////////////////////////
+	
 
-	List<Sphere> particles = new ArrayList<>();
+	
 
-	// Field of lines
 
-	List<Line3D> vectorField = new ArrayList<>();
 
-	// Particle System
+ //Use the start to start things. 
 
-	ParticleSystem system = new ParticleSystem(particleCount, spread);
-
-	// 2D Renderer
-	JRenderer render = new JRenderer("Particle Simulation");
-
-	// Particle Recorder
-
-	ParticleRecorder recorder = new ParticleRecorder();
-
-	// Calculate Vectors for application
-
-	void calculateParticles() {
-
-		system.calculateVectors();
-
-		for (int i = 0; i < particles.size(); i++) {
-
-			particles.get(i).translateXProperty().set(system.getParticle(i).getX());
-			particles.get(i).translateYProperty().set(system.getParticle(i).getY());
-			particles.get(i).translateZProperty().set(system.getParticle(i).getZ());
-
-		}
-
-	}
-
-	// 2D version display
-
-	public void JframeRender() {
-
-		render.updatePlot(recorder.next());
-
-	}
-
-	// 3D version display
 
 	@Override
 	public void start(Stage primaryStage) {
 
-		if (version.contentEquals("3D")) {
-			Group group = new Group();
-			for (int i = 0; i < particleCount; i++) {
+		
+		//Create particle System
+		ParticleSystem system = new ParticleSystem(particleCount, spread, diff);  
 
-				// Add particles from system to the sphere array
+		
+		//Set tracking Interval to zero, and use an update integer to keep the user updated of the percentage of the simulation that is completed.
 
-				particles.add(new Sphere(system.particles.get(i).mass));
-
-				// Use a cylinder to create a line connecting two points
-
-				vectorField.add(new Line3D(
-
-						// Start Line Location
-
-						new Point3D(system.getParticle(i).getX(), system.getParticle(i).getY(),
-								system.getParticle(i).getZ())
-
-						,
-
-						// End Line Location
-
-						new Point3D(system.getParticle(i).getMomentumX(), system.getParticle(i).getMomentumY(),
-								system.getParticle(i).getMomentumZ())
-
-				));
-
-				group.getChildren().add(particles.get(particles.size() - 1));
-
-			}
-
-			Camera camera = new PerspectiveCamera();
-			camera.relocate(-WIDTH / 2, -HEIGHT / 2);
-			camera.translateZProperty().set(+200.0);
-			Scene scene = new Scene(group, WIDTH, HEIGHT);
-			scene.setFill(Color.BLACK);
-			scene.setCamera(camera);
-
-			Timeline timeline = new Timeline(new KeyFrame(Duration.millis(30), new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					calculateParticles();
-				}
-			}));
-			timeline.setCycleCount(Animation.INDEFINITE);
-			timeline.play();
-
-			primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-				switch (event.getCode()) {
-				case W:
-
-					camera.translateZProperty().set(camera.getTranslateZ() + 100);
-
-					break;
-				case S:
-					camera.translateZProperty().set(camera.getTranslateZ() - 100);
-					break;
-				case A:
-
-					camera.translateXProperty().set(camera.getTranslateX() - 100);
-					break;
-
-				case D:
-
-					camera.translateXProperty().set(camera.getTranslateX() + 100);
-					break;
-				case Q:
-
-					camera.translateYProperty().set(camera.getTranslateY() - 100);
-					break;
-				case E:
-
-					camera.translateYProperty().set(camera.getTranslateY() + 100);
-					break;
-
-				}
-			});
-
-			primaryStage.setTitle("Particles");
-			primaryStage.setScene(scene);
-			primaryStage.show();
-
-		}
-
-		else {
-
-			int interval = 0;
+			int trackingInterval = 0;
 			int update = 0;
+			
+		//Loop the simulation by the number of steps.
 			for (Double i = 0.0; i < steps; i++) {
 
+				
+				//increase the update count and create a some formatting for decimals
 				update++;
 				
-				DecimalFormat f = new DecimalFormat("#0.00");
+				DecimalFormat decimalformat = new DecimalFormat("#0.00");
 
+				
+				//I'm using the steps and the quantity in the update in to give the user a continues percent completion
+				//like a progress bar of the simulation. 
+				
+				
 				if (update > steps * .001) {
-					System.out.println("" + f.format(((i / steps) * 100))+"% Done of Calculation.");
+					System.out.println("" + decimalformat.format(((i / steps) * 100))+"% Done of Calculation.");
 					update = 0;
 				}
-				calculateParticles();
-				interval++;
-				if (interval > 50000) {
-					recorder.addParticles(system.particles);
-					interval = 0;
+				
+				
+				//Run one step of the simulation calculation, we calculate every step and dump on file only a portion a small quantity. We do this 
+				//to get as accurate as an interaction between the particles as possible, and by dumping after a set interval the animations will
+				//run smoothly and will not be too slow.
+				
+				system.calculateVectors();
+				
+				
+				//Increase the trackingInterval and check to see if it is higher than the dumpInteval and if it is dump the particle positions onto a file.
+				//
+				
+				trackingInterval++;
+				
+				if (trackingInterval > dumpInterval) {
+					
+					system.dumpToFile(dumpFilename);
+					
+					trackingInterval = 0;
 				}
 			}
 
-			Timeline timeline = new Timeline(new KeyFrame(Duration.millis(30), new EventHandler<ActionEvent>() {
 
-				@Override
-				public void handle(ActionEvent event) {
-					JframeRender();
-				}
-			}));
-			timeline.setCycleCount(Animation.INDEFINITE);
-			timeline.play();
 
-		}
+		
 
 	}
 

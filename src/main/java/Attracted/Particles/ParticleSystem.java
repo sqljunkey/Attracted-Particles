@@ -1,5 +1,8 @@
 package Attracted.Particles;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -10,22 +13,24 @@ import java.util.Random;
 public class ParticleSystem {
 
 	List<Particle> particles = new ArrayList<>();
+	Double diff =0.0;
 
-	//Constructor for the Particle System Class takes number of particles and spread between particles.
-	//The particles initial location are randomly assigned times the spread.
-	
-	// Spread sets the initial distance between particles. This is intend to control the "rest"
+	// Constructor for the Particle System Class takes number of particles and
+	// spread between particles.
+	// The particles initial location are randomly assigned times the spread.
+
+	// Spread sets the initial distance between particles. This is intend to control
+	// the "rest"
 	// speeds of the particles once the particles have found an equilibrium momentum
 	// This of drawing a bow and arrow and letting go.
 
-	
-
-	ParticleSystem(Integer numberOfParticles, Double spread) {
+	ParticleSystem(Integer numberOfParticles, Double spread, Double difference) {
 		Random r = new Random();
 
+		this.diff = difference;
 		for (int i = 0; i < numberOfParticles; i++) {
-			
-			//if(i<numberOfParticles/2) {
+
+			// if(i<numberOfParticles/2) {
 
 			particles.add(new Particle(Math.abs(r.nextGaussian() * 10000000.1), // Mass
 					("Particle" + i), // Particle Name
@@ -34,22 +39,18 @@ public class ParticleSystem {
 					r.nextGaussian() * spread, // Z Position
 					.001
 
-			));//}
-			
-		/*	else {
-				
-				particles.add(new Particle(Math.abs(r.nextGaussian() * 10.1), // Mass
-						("Particle" + i), // Particle Name
-						(r.nextGaussian() * spread)+15000, // X Position
-						(r.nextGaussian() * spread)+15000, // Y Position
-						(r.nextGaussian() * spread)+15000, // Z Position
-						.001
+			));// }
 
-				));	
-			}
-			*/
-
-			
+			/*
+			 * else {
+			 * 
+			 * particles.add(new Particle(Math.abs(r.nextGaussian() * 10.1), // Mass
+			 * ("Particle" + i), // Particle Name (r.nextGaussian() * spread)+15000, // X
+			 * Position (r.nextGaussian() * spread)+15000, // Y Position (r.nextGaussian() *
+			 * spread)+15000, // Z Position .001
+			 * 
+			 * )); }
+			 */
 
 		}
 
@@ -62,18 +63,17 @@ public class ParticleSystem {
 
 	// Calculate Vector will go into a nested iteration of all of the particles one
 	// by one and calculate each momentum vector and
-	// add these up to come up with a single motion vector. 
-	
-	//Then these vectors will be stored into the particle and used to move the
+	// add these up to come up with a single motion vector.
+
+	// Then these vectors will be stored into the particle and used to move the
 	// particle in the final portion of the code.
 
 	public void calculateVectors() {
 
-	
-		
-		//I compare all the particles with other particles in the particles list in this nested loop. 
-		//I do all this except for the particle being evaluated against. 
-		
+		// I compare all the particles with other particles in the particles list in
+		// this nested loop.
+		// I do all this except for the particle being evaluated against.
+
 		for (int i = 0; i < particles.size(); i++) {
 			Double momentumX = 0.0;
 			Double momentumY = 0.0;
@@ -81,44 +81,48 @@ public class ParticleSystem {
 
 			for (int j = 0; j < particles.size(); j++) {
 
-				//This insures particles.get(i) doesn't get evaluated, because being at distance 0 from itself, it would have the strongest weight.
-				//This would through the other force potentials off and possibility produce a division by zero somewhere. 
-				
+				// This insures particles.get(i) doesn't get evaluated, because being at
+				// distance 0 from itself, it would have the strongest weight.
+				// This would through the other force potentials off and possibility produce a
+				// division by zero somewhere.
+
 				if (!particles.get(i).equals(particles.get(j))) {
-					
-					
-					
-					//Here I subtract particle.get(i) location components, X, Y, Z  with
-					//particle.get(j) location components, for some reason it works better by putting a minus sign in 
-					//front of particle.get(i) and then adding particle.get(j). 
+
+					// Here I subtract particle.get(i) location components, X, Y, Z with
+					// particle.get(j) location components, for some reason it works better by
+					// putting a minus sign in
+					// front of particle.get(i) and then adding particle.get(j).
 
 					Double dX = -(particles.get(i).getX()) + (particles.get(j).getX());
 					Double dY = -(particles.get(i).getY()) + (particles.get(j).getY());
 					Double dZ = -(particles.get(i).getZ()) + (particles.get(j).getZ());
-					
-					//I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2. 
-					//This gives me a positive distance  between the particle.get(i) particle
-					//and the particle.get(j).
-					
-					Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
-					
-					//I then re-use the dX to normalize the distance and direction.
-					//I multiply it with one of the force Potentials Functions that take a distance unit
-					//to assign a weight force between particle.get(i)
-					// and particle.get(j) which will be summed up later to create one vector. T
-					
-					
 
-					dX = (dX / 1) * ljPotential(dS)* particles.get(j).mass;
-					dY = (dY / 1) * ljPotential(dS)* particles.get(j).mass;
-					dZ = (dZ / 1) * ljPotential(dS)* particles.get(j).mass;
-					
-					//I add up the resulting vector to the "running count" of vectors, creating one general momentum in directions, X, Y, Z
-					//Depending on the result of the Potential function the added vector can have more or less effect on the total momentum. 
-					
-					//This way even though there are many forces 
-					// acting on particle.get(i) it will tend in the direction of the most forceful vector. 
-					//More information can be found here http://mathworld.wolfram.com/VectorAddition.html
+					// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
+					// This gives me a positive distance between the particle.get(i) particle
+					// and the particle.get(j).
+
+					Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+
+					// I then re-use the dX to normalize the distance and direction.
+					// I multiply it with one of the force Potentials Functions that take a distance
+					// unit
+					// to assign a weight force between particle.get(i)
+					// and particle.get(j) which will be summed up later to create one vector. T
+
+					dX = (dX / 1) * ljPotential(dS) * particles.get(j).mass;
+					dY = (dY / 1) * ljPotential(dS) * particles.get(j).mass;
+					dZ = (dZ / 1) * ljPotential(dS) * particles.get(j).mass;
+
+					// I add up the resulting vector to the "running count" of vectors, creating one
+					// general momentum in directions, X, Y, Z
+					// Depending on the result of the Potential function the added vector can have
+					// more or less effect on the total momentum.
+
+					// This way even though there are many forces
+					// acting on particle.get(i) it will tend in the direction of the most forceful
+					// vector.
+					// More information can be found here
+					// http://mathworld.wolfram.com/VectorAddition.html
 					momentumX += dX;
 					momentumY += dY;
 					momentumZ += dZ;
@@ -127,23 +131,20 @@ public class ParticleSystem {
 
 			}
 
-			//Finally I add the momentum components to the particles.
-			//The addMomentum adds the old momentum and this new momentum times the decay.
-			// This insures the particle will move in small enough steps and that the energy is conserved.
+			// Finally I add the momentum components to the particles.
+			// The addMomentum adds the old momentum and this new momentum times the decay.
+			// This insures the particle will move in small enough steps and that the energy
+			// is conserved.
 			particles.get(i).addMomentumX(momentumX);
 			particles.get(i).addMomentumY(momentumY);
 			particles.get(i).addMomentumZ(momentumZ);
-			
-			
 
 		}
 
-		//After having calculated all the forces on the particles 
-		//I then change the positions of the particle using the momentum components. 
-		
+		// After having calculated all the forces on the particles
+		// I then change the positions of the particle using the momentum components.
 
 		for (int i = 0; i < particles.size(); i++) {
-
 
 			particles.get(i).setLocationX(particles.get(i).getX() + (particles.get(i).getMomentumX()));
 			particles.get(i).setLocationY(particles.get(i).getY() + (particles.get(i).getMomentumY()));
@@ -170,28 +171,27 @@ public class ParticleSystem {
 	// have more force and more motion I inverse the potential at some
 	// arbitrary distance to cause the particles to repel each other.
 
-	// A random component is added to simulate heat in the particles or erratic motion
+	// A random component is added to simulate heat in the particles or erratic
+	// motion
 	// this will cause the particles to have a non-linear attraction to each other.
 
 	public Double nPotential(Double distance) {
 
 		Double newton = 0.0;
 		Random r = new Random();
-		newton = 1 / Math.pow(distance, 3) *500;//* Math.abs(r.nextGaussian())*100;
+		newton = 1 / Math.pow(distance, 3) * 500;// * Math.abs(r.nextGaussian())*100;
 
 		if (newton > .01) {
 			newton *= -1.0;
 
 		}
-		
-		/*if(newton <.0001) {
-			newton = 0.000001;
-		}*/
+
+		/*
+		 * if(newton <.0001) { newton = 0.000001; }
+		 */
 
 		return newton;
 	}
-
-	
 
 	// ljPotential is a simple Potential used in Molecular Dynamics which will repel
 	// a particle as it gets close another particle.
@@ -205,17 +205,62 @@ public class ParticleSystem {
 
 		Double ljPot_1 = 0.0;
 		Double ljPot_2 = 0.0;
-		Double diff=1E-14;
+		//Double diff = 1E-14;
 
 		Double epsilon = 1.1;
 		Double sigma = 10.;
 
-		
-		ljPot_1 = epsilon* (Math.pow((sigma / (distance-diff)), 4) - 2*Math.pow((sigma / (distance-diff)), 2));
-		ljPot_2 =epsilon* (Math.pow((sigma / (distance)), 4) - 2*Math.pow((sigma / (distance)), 2));
-	
+		ljPot_1 = epsilon * (Math.pow((sigma / (distance - diff)), 4) - 2 * Math.pow((sigma / (distance - diff)), 2));
+		ljPot_2 = epsilon * (Math.pow((sigma / (distance)), 4) - 2 * Math.pow((sigma / (distance)), 2));
 
-		return (ljPot_2- ljPot_1);//*1.0E+11 ;
+		return (ljPot_2 - ljPot_1);// *1.0E+11 ;
+	}
+
+	// This function will dump the particle locations to a file for later viewing or
+	// processing. We are using the .xyz file format.
+
+	void dumpToFile(String filename) {
+
+		
+		//Open the file, and first write the number of particles, then a blank space and then append the color, and x, y ,z locations to the file.
+		
+		try {
+			
+			//I'm using bufferedWritter because I want to be consistent???
+			
+			File file = new File(filename);
+			FileWriter fr = new FileWriter(file, true);
+			BufferedWriter br = new BufferedWriter(fr);
+			
+
+			//Write the amount of particles in the system , to indicate start of new dump.
+			br.write(particles.size()+"\n");
+			//br.write("\n");
+			
+			for(Particle particle: particles) {
+				
+				//Append into file particle per particle all separated by white space.
+				
+				
+				br.write(particle.getColor()+" "   //Write particle color
+				+ particle.getX()+" "             //Write X location
+				+ particle.getY()+" "             //Write Y location
+				+ particle.getZ() +"\n" );             //Write Z location
+				
+			}
+			
+			
+			//Close all opened file writting mechanisms.
+			br.close();
+			fr.close();
+			
+			
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
 	}
 
 }
