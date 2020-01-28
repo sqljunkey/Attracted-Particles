@@ -23,7 +23,7 @@ public class Particle {
 
 	String particleColor;
 
-	List<ParticleWeight> weights = new ArrayList();
+
 	
 	//Full version of particle
 

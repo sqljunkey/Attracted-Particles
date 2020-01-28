@@ -1,6 +1,8 @@
 package Attracted.Particles;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Formatter;
@@ -52,7 +54,7 @@ import javafx.event.*;
 
 
 
-public class App extends Application {
+public class App  {
 	
 	//I will place the temporary Application Settings in this block until I can write a propper .script load code.
 	//////////////////////////////////////////////
@@ -67,20 +69,20 @@ public class App extends Application {
 
 	// Number of Steps in Simulation the higher this number the more fine rich detail the timesteps will have
 
-	private static final Double steps = 1000.0;//1E+9;
+	private static final Double steps =1E+9;
 	
 	//Difference between potentials 
 	
-	private static final Double diff = 0.00000001; // 1E-14;
+	private static final Double diff =  1E-14;
 
 	//Dump interval
 	
-	private static final int dumpInterval = 50; 
+	private static final int dumpInterval = 50000; 
 	
 	//Dump filename
 	
 	
-	String dumpFilename = "file.xyz";
+	static String dumpFilename = "file.xyz";
 
 
   /////////////////////////////////////////
@@ -93,12 +95,28 @@ public class App extends Application {
  //Use the start to start things. 
 
 
-	@Override
-	public void start(Stage primaryStage) {
+	
+	public static void startSim() {
 
 		
 		//Create particle System
 		ParticleSystem system = new ParticleSystem(particleCount, spread, diff);  
+		
+		
+		//Start new Dump File
+		
+		try {
+			
+			BufferedWriter writer = new BufferedWriter(new FileWriter(dumpFilename));
+		    writer.write("");
+		     
+		    writer.close();
+			
+			
+		}catch(Exception e) {
+			
+			e.printStackTrace();
+		}
 
 		
 		//Set tracking Interval to zero, and use an update integer to keep the user updated of the percentage of the simulation that is completed.
@@ -153,8 +171,52 @@ public class App extends Application {
 	}
 
 	public static void main(String[] args) {
-
-		launch(args);
+		//Test Bezier Curve
+		Potentials p = new Potentials(.001);
+		List <Double> xPoints = new ArrayList<>();
+		List <Double> yPoints = new ArrayList<>();
+		xPoints.add(0.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(1.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(2.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(3.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(-20.0);
+		yPoints.add(-1.0);
+		
+		
+		
+		xPoints.add(40.0);
+		yPoints.add(-1.0);
+		
+		xPoints.add(10.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(11.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(12.0);
+		yPoints.add(0.0);
+		
+		xPoints.add(40.0);
+		yPoints.add(0.0);
+		
+		
+		Double distance = 0.0;
+		
+		for(int i=0;i<100;i++) {
+			distance+=.01;
+			
+		System.out.println(p.bezierCurve(distance, xPoints)+","+
+				p.bezierCurve(distance, yPoints));
+		}
+		//startSim();
 
 	}
 
