@@ -23,6 +23,7 @@ public class Particle {
 
 	String particleColor;
 
+	List<Integer> connections = new ArrayList<>();
 
 	
 	//Full version of particle
@@ -36,7 +37,8 @@ public class Particle {
 		locationY = y;
 		locationZ = z;
 		this.decayRatio = decay;
-
+		
+		
 		momentumX = 0.0;
 		momentumY = 0.0;
 		momentumZ = 0.0;
@@ -93,7 +95,7 @@ public class Particle {
 
 	public void addMomentumX(Double momentumX) {
 
-		this.momentumX = this.momentumX  + momentumX* decayRatio;
+		this.momentumX = this.momentumX* decayRatio  + momentumX*0.0001;
 
 	}
 
@@ -103,7 +105,7 @@ public class Particle {
 
 	public void addMomentumY(Double momentumY) {
 
-		this.momentumY = this.momentumY  + momentumY* decayRatio;
+		this.momentumY = this.momentumY* decayRatio  + momentumY*0.0001;
 	}
 
 	public Double getMomentumZ() {
@@ -112,7 +114,7 @@ public class Particle {
 
 	public void addMomentumZ(Double momentumZ) {
 
-		this.momentumZ = this.momentumZ  + momentumZ* decayRatio;
+		this.momentumZ = this.momentumZ* decayRatio  + momentumZ*0.0001;
 
 	}
 
@@ -126,6 +128,11 @@ public class Particle {
 
 	public void setLocationZ(Double locationZ) {
 		this.locationZ = locationZ;
+	}
+	
+	public void setDecay(Double decayRatio) {
+		
+		this.decayRatio = decayRatio;
 	}
 
 	public Point3D getLocation() {

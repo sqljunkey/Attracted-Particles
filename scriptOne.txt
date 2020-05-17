@@ -1,0 +1,25 @@
+#########################
+#    Sim 1.0 Config
+#
+#########################
+
+particle count 100
+spread 22
+steps 1E+12
+diff 1E-12
+dump 5000
+dumpfile file.xyz
+
+
+
+##########################
+#Bezier Curve Points
+##########################
+
+point 10.0 , 12.0
+point 120 , 12.2
+point 22 , 120
+point 9 , 201
+point 10000.0 , 1020 
+
+#########################

@@ -25,8 +25,6 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
 import javafx.event.*;
 
-
-
 //This is a particle potential simulator.
 //
 //The reason I'm writing this simulator is to develop some a system that can be used in a macro type of simulation. There are many
@@ -47,176 +45,158 @@ import javafx.event.*;
 //a black hole or two colliding with each other, and maybe some quantum mechanics. A tall order I know, given the many short comings, yet what
 //the heck right?
 
-
 //The way the software works is that it will get it's different parameters from a .script file, load them.(which is currently not implemented). Run the 
 //Simulation using the potentials and weights, dump the particle locations in a file at a set interval and  then close the application.
 //Hopefully after a few minutes you will have a .xyz file that you can load in an animation software and look at.
 
+public class App {
 
-
-public class App  {
-	
-	//I will place the temporary Application Settings in this block until I can write a propper .script load code.
+	// I will place the temporary Application Settings in this block until I can
+	// write a propper .script load code.
 	//////////////////////////////////////////////
 
 	// Number of Particles in the system
 
-	private static final int particleCount = 100;
+	private static final int particleCount = 50;
 
 	// Average Distance between generated particles
 
-	private static final double spread = 200;
+	private static final double spread = 500;
 
-	// Number of Steps in Simulation the higher this number the more fine rich detail the timesteps will have
+	// Number of Steps in Simulation the higher this number the more fine rich
+	// detail the timesteps will have
 
-	private static final Double steps =1E+9;
-	
-	//Difference between potentials 
-	
-	private static final Double diff =  1E-14;
+	private static final Double steps = 1E+9;
 
-	//Dump interval
-	
-	private static final int dumpInterval = 50000; 
-	
-	//Dump filename
-	
-	
+	// Difference between potentials
+
+	private static final Double diff = 1E-3;
+
+	// Dump interval
+
+	private static final int dumpInterval = 20;
+
+	// Dump filename
+
 	static String dumpFilename = "file.xyz";
 
+	///////////////////////////////////////// 
+	static ParticleSystem system;
 
-  /////////////////////////////////////////
-	
+	ParticleSystemConfiguration cfg = new ParticleSystemConfiguration();
 
-	
+	// Use the start to start things.
 
+	public static void startSim(ParticleSystemConfiguration cfg ) {
 
+		// Create particle System
 
- //Use the start to start things. 
+		// Start new Dump File
 
-
-	
-	public static void startSim() {
-
-		
-		//Create particle System
-		ParticleSystem system = new ParticleSystem(particleCount, spread, diff);  
-		
-		
-		//Start new Dump File
-		
 		try {
-			
-			BufferedWriter writer = new BufferedWriter(new FileWriter(dumpFilename));
-		    writer.write("");
-		     
-		    writer.close();
-			
-			
-		}catch(Exception e) {
-			
+
+			BufferedWriter writer = new BufferedWriter(new FileWriter(cfg.getDumpFilename()));
+			writer.write("");
+
+			writer.close();
+
+		} catch (Exception e) {
+
 			e.printStackTrace();
 		}
 
+		// Set tracking Interval to zero, and use an update integer to keep the user
+		// updated of the percentage of the simulation that is completed.
+
+		int trackingInterval = 0;
+		int update = 0;
+		int updateEnergy = 0;
+		int iterate =0;
 		
-		//Set tracking Interval to zero, and use an update integer to keep the user updated of the percentage of the simulation that is completed.
+		// Loop the simulation by the number of steps.
+		for (Double i = 0.0; i < cfg.getSteps(); i++) {
 
-			int trackingInterval = 0;
-			int update = 0;
-			
-		//Loop the simulation by the number of steps.
-			for (Double i = 0.0; i < steps; i++) {
+			// increase the update count and create a some formatting for decimals
+			update++;
+			updateEnergy++;
+		//	iterate++;
 
-				
-				//increase the update count and create a some formatting for decimals
-				update++;
-				
-				DecimalFormat decimalformat = new DecimalFormat("#0.00");
+			DecimalFormat decimalformat = new DecimalFormat("#0.00");
 
-				
-				//I'm using the steps and the quantity in the update in to give the user a continues percent completion
-				//like a progress bar of the simulation. 
-				
-				
-				if (update > steps * .001) {
-					System.out.println("" + decimalformat.format(((i / steps) * 100))+"% Done of Calculation.");
-					update = 0;
-				}
-				
-				
-				//Run one step of the simulation calculation, we calculate every step and dump on file only a portion a small quantity. We do this 
-				//to get as accurate as an interaction between the particles as possible, and by dumping after a set interval the animations will
-				//run smoothly and will not be too slow.
-				
-				system.calculateVectors();
-				
-				
-				//Increase the trackingInterval and check to see if it is higher than the dumpInteval and if it is dump the particle positions onto a file.
-				//
-				
-				trackingInterval++;
-				
-				if (trackingInterval > dumpInterval) {
-					
-					system.dumpToFile(dumpFilename);
-					
-					trackingInterval = 0;
-				}
+			// I'm using the steps and the quantity in the update in to give the user a
+			// continues percent completion
+			// like a progress bar of the simulation.
+
+			if (update > cfg.getSteps() * .001) {
+				System.out.println("" + decimalformat.format(((i / cfg.getSteps()) * 100)) + "% Done of Calculation.");
+				update = 0;
 			}
+			
+			if(updateEnergy>cfg.getSteps() * .000001 ) {
+				
+				updateEnergy =0;
+				System.out.println("Energy: "+system.getEnergy());
+				System.out.println("Decay Ratio: "+system.getDecay());
+				//system.iterateMeshPotential();
+			}
+			
+		//	if(iterate>cfg.getSteps()*.000001) {
+		//		
+			//	system.iterateMeshPotential();
+		//		iterate =0;
+			//}
 
+			// Run one step of the simulation calculation, we calculate every step and dump
+			// on file only a portion a small quantity. We do this
+			// to get as accurate as an interaction between the particles as possible, and
+			// by dumping after a set interval the animations will
+			// run smoothly and will not be too slow.
 
+			//system.calculateVectors();
+			
+			system.calculateMesh();
+			// Increase the trackingInterval and check to see if it is higher than the
+			// dumpInteval and if it is dump the particle positions onto a file.
+			//
 
-		
+			trackingInterval++;
+
+			if (trackingInterval > cfg.getDumpInterval()) {
+
+				system.dumpToFile(cfg.getDumpFilename());
+
+				trackingInterval = 0;
+			}
+		}
 
 	}
 
 	public static void main(String[] args) {
-		//Test Bezier Curve
+		// Test Bezier Curve
 		Potentials p = new Potentials(.001);
-		List <Double> xPoints = new ArrayList<>();
-		List <Double> yPoints = new ArrayList<>();
-		xPoints.add(0.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(1.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(2.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(3.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(-20.0);
-		yPoints.add(-1.0);
+
+
+
 		
 		
+		ParticleSystemConfiguration cfg = new ParticleSystemConfiguration();
 		
-		xPoints.add(40.0);
-		yPoints.add(-1.0);
-		
-		xPoints.add(10.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(11.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(12.0);
-		yPoints.add(0.0);
-		
-		xPoints.add(40.0);
-		yPoints.add(0.0);
+		cfg.readFile(args[0]);
+		cfg.printValues();
 		
 		
-		Double distance = 0.0;
+		system= new ParticleSystem(
+				cfg.getParticleCount(), 
+				cfg.getSpread(),
+				cfg.getDiff(), 
+				cfg.getMass(), 
+				cfg.getTargetEnergy(),
+				cfg.getPoints(),
+				cfg.getSprings());
 		
-		for(int i=0;i<100;i++) {
-			distance+=.01;
-			
-		System.out.println(p.bezierCurve(distance, xPoints)+","+
-				p.bezierCurve(distance, yPoints));
-		}
-		//startSim();
+		
+	
+		 startSim(cfg);
 
 	}
 
