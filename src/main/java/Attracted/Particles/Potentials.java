@@ -33,18 +33,19 @@ public class Potentials {
 //Simple Spring potential will give you a simple gradient based on distance from target distance
 
 	public Double simpleString(Double dS) {
+	
 
-		Double difference = Math.abs(targetDistance) - dS;
+
+		Double	difference = Math.abs(targetDistance) - dS;
+	
 
 		// targetDistance+=difference*0.000001;
-		
-			if (difference < 0)
 
-				return -difference * diff;
-			else
-				return -difference * diff;
+		if (difference < 0)
 
-		
+			return -difference * diff * .01;
+		else
+			return -difference * diff;
 
 	}
 	// Set target distance for simple spring
@@ -188,14 +189,10 @@ public class Potentials {
 	public Double nPotential(Double distance) {
 
 		Double newton = 0.0;
-		Random r = new Random();
-		newton = 1 / Math.pow(distance, 2) * 500;// * Math.abs(r.nextGaussian())*100;
+		
+		newton = 1 / Math.pow(distance, 2);// (G)Mm/R^2
 
-		if (newton > .01) {
-			newton *= -1.0;
-
-		}
-
+		
 		return newton;
 	}
 

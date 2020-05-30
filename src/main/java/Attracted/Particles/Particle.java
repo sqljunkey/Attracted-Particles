@@ -25,6 +25,28 @@ public class Particle {
 
 	List<Integer> connections = new ArrayList<>();
 
+	//Copy Particle
+	
+	public Particle(Particle copy) {
+		
+		this.mass = copy.mass;
+		locationX = copy.locationX;
+		locationY = copy.locationY;
+		locationZ = copy.locationZ;
+		this.decayRatio = copy.decayRatio;
+		
+		
+		momentumX = 0.0;
+		momentumY = 0.0;
+		momentumZ = 0.0;
+
+		this.particleName = copy.particleName;
+
+		String colors[] = { "RED", "BLUE", "GREEN" };
+		particleColor = colors[new Random().nextInt(3)];	
+		
+		
+	}
 	
 	//Full version of particle
 

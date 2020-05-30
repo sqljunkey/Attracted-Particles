@@ -17,9 +17,10 @@ public class ParticleSystem {
 
 	// List of particles
 	List<Particle> particles = new ArrayList<>();
+	List<Particle> testParticles = new ArrayList<>();
 
 	// Mesh Object, is a interconnected system of section formed by particles.
-	List<MeshSection> mesh = new ArrayList<>();
+	List<GeometricGrouping> mesh = new ArrayList<>();
 
 	// List of potentials to choose from
 	List<Potentials> potentialLibrary = new ArrayList<>();
@@ -220,7 +221,7 @@ public class ParticleSystem {
 		// After having calculated all the forces on the particles
 		// I then change the positions of the particle using the momentum components.
 
-		for (int i = 0; i < particles.size(); i++) {
+		for (int i = 1; i < particles.size(); i++) {
 
 			particles.get(i).setLocationX(particles.get(i).getX() + particles.get(i).getMomentumX());
 			particles.get(i).setLocationY(particles.get(i).getY() + particles.get(i).getMomentumY());
@@ -231,6 +232,8 @@ public class ParticleSystem {
 	}
 
 	void createMesh(int size) {
+
+		Double distance = 100.0;
 
 		// First create a series of 8 points to represent a cube in the mesh then join
 		// the adjoining vertices by comparing their locations.
@@ -245,7 +248,7 @@ public class ParticleSystem {
 				for (int z = 0; z < size; z++) {
 
 					// Create Block Mesh Section
-					MeshSection sec = new MeshSection();
+					GeometricGrouping sec = new GeometricGrouping("MeshSection");
 
 					// Assign arbitrary potential to block to initialize it.
 
@@ -268,9 +271,9 @@ public class ParticleSystem {
 								particles.add(new Particle(1.0, // Math.abs(r.nextGaussian()), // Mass
 										("Particle" + x + "_" + y + "_" + z + "_" + xx + "_" + yy + "_" + zz), // Particle
 																												// Name
-										(double) x * 10.0 + 10.0 * xx, // X Position
-										(double) y * 10.0 + 10.0 * yy, // Y Position
-										(double) z * 10.0 + 10.0 * zz, // Z Position
+										(double) x * distance + distance * xx, // X Position
+										(double) y * distance + distance * yy, // Y Position
+										(double) z * distance + distance * zz, // Z Position
 										decayRatio // Decay / Lag
 
 								));
@@ -365,9 +368,57 @@ public class ParticleSystem {
 
 		}
 
+		/// Create Vertex Based on closest Points.
+
+		System.out.println("Creating Vertices");
+
+		for (GeometricGrouping meshSection : mesh) {
+
+			for (Integer locationx : meshSection.blockLocation) {
+
+				// create a vertex
+
+				List<Integer> vertex = new ArrayList<>();
+
+				for (Integer locationy : meshSection.blockLocation) {
+
+					if (locationx != locationy) {
+
+						Double dX = -(particles.get(locationx).getX()) + (particles.get(locationy).getX());
+						Double dY = -(particles.get(locationx).getY()) + (particles.get(locationy).getY());
+						Double dZ = -(particles.get(locationx).getZ()) + (particles.get(locationy).getZ());
+
+						Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+
+						System.out.println(dS);
+
+						if (dS.equals(distance)) {
+
+							vertex.add(locationy);
+
+						}
+
+					}
+
+				}
+
+				System.out.println("====================");
+
+				// Add new Vertex to MeshSection
+				meshSection.addGroup(new GeometricGrouping("vertex", vertex));
+
+			}
+
+		}
+
+		// Copy two test particles
+
+		testParticles.add(new Particle(1.0,"Test 1",  -330.4, -330.3, -330.2, 0.001 ));
+		testParticles.add(new Particle(1.0,"Test 2", 1104.3, 1104.0, 1102.3, 0.001 ));
 		// Set one Mesh to count the mass or have a different potential
 
-		mesh.get(mesh.size() / 2 + 10).assignPotential(potentialLibrary.get(1));
+		// mesh.get(mesh.size() /2-50).assignPotential(potentialLibrary.get(1));
+		// mesh.get((mesh.size() /2+50)).assignPotential(potentialLibrary.get(1));
 
 	}
 
@@ -396,7 +447,7 @@ public class ParticleSystem {
 
 	// search all the meshes for common vertices and find the one with the largest
 	// volume and migrate into it.
-	List<Integer> searchNextSection(MeshSection sec) {
+	List<Integer> searchNextSection(GeometricGrouping sec) {
 		List<Integer> adjcents = new ArrayList<>();
 
 		for (Integer p : sec.blockLocation) {
@@ -484,164 +535,157 @@ public class ParticleSystem {
 
 		// Iterate thru each vertexes and do a reverse move on the inner vertex based on
 		// mass and distance.
-		for (MeshSection sec : mesh) {
+		for (GeometricGrouping sec : mesh) {
 
-			// Double maxDist = sec.meshPotential.cutoffPotential();
-			for (Integer p : sec.blockLocation) {
-				Double momentumX = 0.0;
-				Double momentumY = 0.0;
-				Double momentumZ = 0.0;
+			List<Double> distances = new ArrayList<>();
 
-				for (Integer c : sec.blockLocation) {
+			for (GeometricGrouping vertex : sec.groups) {
 
-					if (c != p) {
+				for (Integer p : vertex.blockLocation) {
 
-						Double dX = -(particles.get(p).getX()) + (particles.get(c).getX());
-						Double dY = -(particles.get(p).getY()) + (particles.get(c).getY());
-						Double dZ = -(particles.get(p).getZ()) + (particles.get(c).getZ());
+					Double momentumX = 0.0;
+					Double momentumY = 0.0;
+					Double momentumZ = 0.0;
 
-						// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
-						// This gives me a positive distance between the particle.get(i) particle
-						// and the particle.get(j).
+					for (Integer c : vertex.blockLocation) {
 
-						Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
-						// if(dS<maxDist) {
+						if (c != p) {
 
-						// I then re-use the dX to normalize the distance and direction.
-						// I multiply it with one of the force Potentials Functions that take a distance
-						// unit
-						// to assign a weight force between particle.get(i)
-						// and particle.get(j) which will be summed up later to create one vector. T
+							Double dX = -(particles.get(p).getX()) + (particles.get(c).getX());
+							Double dY = -(particles.get(p).getY()) + (particles.get(c).getY());
+							Double dZ = -(particles.get(p).getZ()) + (particles.get(c).getZ());
 
-						Double pot = sec.meshPotential.simpleString(dS);
-						// Double pot = sec.meshPotential.nPotential(dS);
+							// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
+							// This gives me a positive distance between the particle.get(i) particle
+							// and the particle.get(j).
 
-						dX = (dX / 1) * pot * particles.get(c).mass;
-						dY = (dY / 1) * pot * particles.get(c).mass;
-						dZ = (dZ / 1) * pot * particles.get(c).mass;
+							Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
 
-						// I add up the resulting vector to the "running count" of vectors, creating one
-						// general momentum in directions, X, Y, Z
-						// Depending on the result of the Potential function the added vector can have
-						// more or less effect on the total momentum.
+							// Double pot = sec.meshPotential.nPotential(dS);
+							Double pot = 0.0;
+							pot = sec.meshPotential.simpleString(dS);
 
-						// This way even though there are many forces
-						// acting on particle.get(i) it will tend in the direction of the most forceful
-						// vector.
-						// More information can be found here
-						// http://mathworld.wolfram.com/VectorAddition.html
-						momentumX += dX;
-						momentumY += dY;
-						momentumZ += dZ;
+							/*
+							 * if (sec.equals(mesh.get(mesh.size() / 2))) {
+							 * 
+							 * pot = potentialLibrary.get(2).bezierPotential(dS); }
+							 * 
+							 * else { pot = potentialLibrary.get(3).bezierPotential(dS); }
+							 * 
+							 */
+							dX = (dX / 1) * pot * particles.get(c).mass*.001;
+							dY = (dY / 1) * pot * particles.get(c).mass*.001;
+							dZ = (dZ / 1) * pot * particles.get(c).mass*.001;
 
-						// }
+							// I add up the resulting vector to the "running count" of vectors, creating one
+							// general momentum in directions, X, Y, Z
+							// Depending on the result of the Potential function the added vector can have
+							// more or less effect on the total momentum.
 
-					}
+							// This way even though there are many forces
+							// acting on particle.get(i) it will tend in the direction of the most forceful
+							// vector.
+							// More information can be found here
+							// http://mathworld.wolfram.com/VectorAddition.html
+							momentumX += dX;
+							momentumY += dY;
+							momentumZ += dZ;
 
-				}
-				particles.get(p).addMomentumX(momentumX);
-				particles.get(p).addMomentumY(momentumY);
-				particles.get(p).addMomentumZ(momentumZ);
+							// }
 
-			}
+						} // End if(c!=p)
+					} // End c
 
-			
-			
-		}
+					particles.get(p).addMomentumX(momentumX);
+					particles.get(p).addMomentumY(momentumY);
+					particles.get(p).addMomentumZ(momentumZ);
+
+				} // End p Loop
+
+			} // End Vertex Loop
+
+		} // End Mesh Loop
+
+		// Calculate Deformation.
 		
-		//
-		//A test
-		/*
-		for(Particle p: particles) {
-			
-			Double momentumX = 0.0;
-			Double momentumY = 0.0;
-			Double momentumZ = 0.0;
+		
+	for(int j =0; j < testParticles.size();j++) {
+			for (int i =0; i<particles.size(); i++) {
 
-			
-			for(Particle f: particles) {
 				
-				if(!f.equals(p)) {
-					Double dX = -(p.getX()) + (f.getX());
-					Double dY = -(p.getY()) + (f.getY());
-					Double dZ = -(p.getZ()) + (f.getZ());
-
-					// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
-					// This gives me a positive distance between the particle.get(i) particle
-					// and the particle.get(j).
+					 
+				
+					Double dX = -(testParticles.get(j).getX()) + (particles.get(i).getX());
+					Double dY = -(testParticles.get(j).getY()) + (particles.get(i).getY());
+					Double dZ = -(testParticles.get(j).getZ()) + (particles.get(i).getZ());
 
 					Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+					
+
+					
 					Double pot = mesh.get(0).meshPotential.nPotential(dS);
-					// Double pot = sec.meshPotential.nPotential(dS);
-
-					dX = (dX / 1) * pot ;
-					dY = (dY / 1) * pot ;
-					dZ = (dZ / 1) * pot ;
-
-					// I add up the resulting vector to the "running count" of vectors, creating one
-					// general momentum in directions, X, Y, Z
-					// Depending on the result of the Potential function the added vector can have
-					// more or less effect on the total momentum.
-
-					// This way even though there are many forces
-					// acting on particle.get(i) it will tend in the direction of the most forceful
-					// vector.
-					// More information can be found here
-					// http://mathworld.wolfram.com/VectorAddition.html
-					momentumX += dX*0.001;
-					momentumY += dY*0.001;
-					momentumZ += dZ*0.001;
 					
+					Double momentumX = (dX / 1) * pot * testParticles.get(j).mass *2;
+					Double momentumY = (dY / 1) * pot * testParticles.get(j).mass *2;
+					Double momentumZ = (dZ / 1) * pot * testParticles.get(j).mass *2;
 					
+
+					
+					particles.get(i).addMomentumX(momentumX);
+					particles.get(i).addMomentumY(momentumY);
+					particles.get(i).addMomentumZ(momentumZ);
+
 				}
-				
-				
-				
-			}
+	}
+
 			
-			p.addMomentumX(momentumX);
-			p.addMomentumY(momentumY);
-			p.addMomentumZ(momentumZ);
-			
-			
-			
-		} 
-		*/
-		
+	
+ 
 		Double totalEnergy = 0.0;
+		for (Particle p : particles) {
+
+			Double energy = 0.0;
+
+			energy += Math.abs(p.getMomentumX());
+			energy += Math.abs(p.getMomentumY());
+			energy += Math.abs(p.getMomentumZ());
+
+			totalEnergy += energy / 3;
+		}
+
+		averageEnergy = totalEnergy / particles.size();
+
+		if (averageEnergy > targetEnergy) {
+
+			decayRatio = 0.99999;
 			for (Particle p : particles) {
-
-				Double energy = 0.0;
-
-				energy += Math.abs(p.getMomentumX());
-				energy += Math.abs(p.getMomentumY());
-				energy += Math.abs(p.getMomentumZ());
-
-				totalEnergy += energy / 3;
+				p.setDecay(decayRatio);
 			}
 
-			averageEnergy = totalEnergy / particles.size();
+		} else if (averageEnergy < targetEnergy) {
+			decayRatio = 1.00001;
+			for (Particle p : particles) {
+				p.setDecay(decayRatio);
+			}
 
-			if (averageEnergy > targetEnergy) {
+		}
+		
+		
+		testParticles.get(0).setLocationX(testParticles.get(0).getX()+0.01);
+		testParticles.get(0).setLocationY(testParticles.get(0).getY()+0.01);
+		testParticles.get(0).setLocationZ(testParticles.get(0).getZ()+0.01);
+		
 
-				decayRatio =  1.0;//0.9999;
-				for (Particle p : particles) {
-					p.setDecay(decayRatio);
-				}
+		testParticles.get(1).setLocationX(testParticles.get(1).getX()-0.01);
+		testParticles.get(1).setLocationY(testParticles.get(1).getY()-0.01);
+		testParticles.get(1).setLocationZ(testParticles.get(1).getZ()-0.01);
 
-			} else if (averageEnergy < targetEnergy) {
-				decayRatio =  1.0;//0.9999;1.0001;
-				for (Particle p : particles) {
-					p.setDecay(decayRatio);
-				}
-
-			} 
 		for (int i = 0; i < particles.size(); i++) {
 
-				particles.get(i).setLocationX(particles.get(i).getX() + particles.get(i).getMomentumX());
-				particles.get(i).setLocationY(particles.get(i).getY() + particles.get(i).getMomentumY());
-				particles.get(i).setLocationZ(particles.get(i).getZ() + particles.get(i).getMomentumZ());
-			}
+			particles.get(i).setLocationX(particles.get(i).getX() + particles.get(i).getMomentumX());
+			particles.get(i).setLocationY(particles.get(i).getY() + particles.get(i).getMomentumY());
+			particles.get(i).setLocationZ(particles.get(i).getZ() + particles.get(i).getMomentumZ());
+		}
 	}
 
 	Double getEnergy() {
@@ -671,8 +715,8 @@ public class ParticleSystem {
 			BufferedWriter br = new BufferedWriter(fr);
 
 			// Write the amount of particles in the system , to indicate start of new dump.
-			br.write(particles.size() - 1 + "\n");
-			// br.write("\n");
+			br.write((particles.size()+testParticles.size()) + "\n");
+			 br.write("\n");
 
 			for (Particle p : particles) {
 
@@ -683,6 +727,14 @@ public class ParticleSystem {
 						+ p.getY() + " " // Write Y location
 						+ p.getZ() + "\n"); // Write Z location
 
+			}
+			
+			for(Particle p: testParticles) {
+				br.write(p.getColor() + " " // Write particle color
+						+ p.getX() + " " // Write X location
+						+ p.getY() + " " // Write Y location
+						+ p.getZ() + "\n"); // Write Z location
+				
 			}
 
 			// Close all opened file writing mechanisms.
