@@ -154,7 +154,10 @@ public class App {
 
 			//system.calculateVectors();
 			
-			system.calculateMesh();
+			//system.calculateMeshes();
+			
+			system.calculatePIC();
+			//system.calculateTwoParticleSets();
 			// Increase the trackingInterval and check to see if it is higher than the
 			// dumpInteval and if it is dump the particle positions onto a file.
 			//

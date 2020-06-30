@@ -182,16 +182,18 @@ public class Potentials {
 	// have more force and more motion I inverse the potential at some
 	// arbitrary distance to cause the particles to repel each other.
 
-	// A random component is added to simulate heat in the particles or erratic
-	// motion
+	
 	// this will cause the particles to have a non-linear attraction to each other.
 
 	public Double nPotential(Double distance) {
 
 		Double newton = 0.0;
 		
+	
+		if(distance>1.0) {
 		newton = 1 / Math.pow(distance, 2);// (G)Mm/R^2
 
+		}
 		
 		return newton;
 	}

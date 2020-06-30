@@ -114,10 +114,22 @@ public class Particle {
 	public Double getMomentumX() {
 		return momentumX;
 	}
-
+    public void setMomentumX(Double momentumX) {
+    	this.momentumX = momentumX;
+    }
+    
+    public void setMomentumY(Double momentumY) {
+    	
+    	this.momentumY = momentumY;
+    }
+    
+    public void setMomentumZ(Double momentumZ) {
+    	this.momentumZ = momentumZ;
+    	
+    }
 	public void addMomentumX(Double momentumX) {
 
-		this.momentumX = this.momentumX* decayRatio  + momentumX*0.0001;
+		this.momentumX = this.momentumX* decayRatio  + momentumX*0.001;
 
 	}
 
@@ -125,9 +137,10 @@ public class Particle {
 		return momentumY;
 	}
 
+	
 	public void addMomentumY(Double momentumY) {
 
-		this.momentumY = this.momentumY* decayRatio  + momentumY*0.0001;
+		this.momentumY = this.momentumY* decayRatio  + momentumY*0.001;
 	}
 
 	public Double getMomentumZ() {
@@ -136,7 +149,7 @@ public class Particle {
 
 	public void addMomentumZ(Double momentumZ) {
 
-		this.momentumZ = this.momentumZ* decayRatio  + momentumZ*0.0001;
+		this.momentumZ = this.momentumZ* decayRatio  + momentumZ*0.001;
 
 	}
 
@@ -160,6 +173,23 @@ public class Particle {
 	public Point3D getLocation() {
 
 		return new Point3D(getX(), getY(), getZ());
+	}
+	
+	public Double getDistance(Particle p) {
+		
+
+		Double dX = -p.getX() + (this.getX());
+		Double dY = -p.getY() + (this.getY());
+		Double dZ = -p.getZ() + (this.getZ());
+
+		Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+		return dS; 
+		
+	}
+	
+	public void  clearMomentum() {
+		
+		this.momentumX = this.momentumY = this.momentumZ = 0.0;
 	}
 
 	public Point3D getMomentum() {

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,7 @@ public class ParticleSystem {
 	List<Particle> testParticles = new ArrayList<>();
 
 	// Mesh Object, is a interconnected system of section formed by particles.
-	List<GeometricGrouping> mesh = new ArrayList<>();
+	List<Mesh> meshes = new ArrayList<>();
 
 	// List of potentials to choose from
 	List<Potentials> potentialLibrary = new ArrayList<>();
@@ -29,7 +30,7 @@ public class ParticleSystem {
 
 	Double averageEnergy = 0.0;
 	Double targetEnergy = 0.0;
-	Double decayRatio = 1.0;
+	Double decayRatio = 1.0;//.99999;
 
 	// Constructor for the Particle System Class takes number of particles and
 	// spread between particles.
@@ -61,12 +62,12 @@ public class ParticleSystem {
 
 		// Set Target Energy for system to reach
 		this.targetEnergy = targetEnergy;
+// Random location generator
+			Random r = new Random();
 
 		if (false) {
 
-			// Random location generator
-			Random r = new Random();
-
+			
 			for (int i = 0; i < numberOfParticles; i++) {
 
 				// Create 5 random connections
@@ -86,7 +87,43 @@ public class ParticleSystem {
 			// Create Mesh based on numberOfParticles but otherwise mesh that has n mesh
 			// sections in each axis.
 
-			createMesh(numberOfParticles);
+			createMesh(numberOfParticles * 10, -2000.0);
+
+			testParticles.add(new Particle(Math.abs(1.0), // Mass
+					("Particle" + 1), // Particle Name
+					r.nextGaussian() * spread + 5000, // X Position
+					r.nextGaussian() * spread + 5000, // Y Position
+					r.nextGaussian() * spread + 5000, // Z Position
+					decayRatio // Decay / Lag
+
+			));
+
+		  testParticles.add(new Particle(Math.abs(10.0), // Mass
+					("Particle" + 2), // Particle Name
+					r.nextGaussian() * spread +5200, // X Position
+					r.nextGaussian() * spread+5200, // Y Position
+					r.nextGaussian() * spread+5200, // Z Position
+					decayRatio // Decay / Lag
+
+			));
+			 testParticles.add(new Particle(Math.abs(332946.0487), // Mass
+					("Particle" + 3), // Particle Name
+					r.nextGaussian() * spread+ 5000, // X Position
+					r.nextGaussian() * spread+ 5000, // Y Position
+					r.nextGaussian() * spread+ 5000, // Z Position
+					decayRatio // Decay / Lag
+
+			));/* */
+		/*	testParticles.add(new Particle(Math.abs(10.0), // Mass
+					("Particle" + 4), // Particle Name
+					r.nextGaussian() * spread+ 5000, // X Position
+					r.nextGaussian() * spread+ 5000, // Y Position
+					r.nextGaussian() * spread+ 5000, // Z Position
+					decayRatio // Decay / Lag
+
+			)); */
+
+			System.out.println("Number of total Particles: " + particles.size());
 
 		}
 
@@ -231,15 +268,14 @@ public class ParticleSystem {
 
 	}
 
-	void createMesh(int size) {
+	void createMesh(int size, Double displacement) {
 
-		Double distance = 100.0;
+		List<GeometricGrouping> mesh = new ArrayList<>();
+		//List<Particle> vertices = new ArrayList<>();
+		Double distance = 2000.0;
 
 		// First create a series of 8 points to represent a cube in the mesh then join
 		// the adjoining vertices by comparing their locations.
-
-		// Random Mass
-		Random r = new Random();
 
 		for (int x = 0; x < size; x++) {
 
@@ -269,8 +305,9 @@ public class ParticleSystem {
 								// Create new Particle
 
 								particles.add(new Particle(1.0, // Math.abs(r.nextGaussian()), // Mass
-										("Particle" + x + "_" + y + "_" + z + "_" + xx + "_" + yy + "_" + zz), // Particle
-																												// Name
+										("Particle" + x + "_" + y + "_" + z + "_" + xx + "_" + yy + "_" + zz + "_"
+												+ displacement), // Particle
+										// Name
 										(double) x * distance + distance * xx, // X Position
 										(double) y * distance + distance * yy, // Y Position
 										(double) z * distance + distance * zz, // Z Position
@@ -278,7 +315,8 @@ public class ParticleSystem {
 
 								));
 
-								sec.addParticle("Particle" + x + "_" + y + "_" + z + "_" + xx + "_" + yy + "_" + zz);
+								sec.addParticle("Particle" + x + "_" + y + "_" + z + "_" + xx + "_" + yy + "_" + zz
+										+ "_" + displacement);
 
 							}
 						}
@@ -294,8 +332,8 @@ public class ParticleSystem {
 		}
 
 		System.out.println("Mesh Created");
-		System.out.println(particles.size());
 		System.out.println("Joining Mesh....");
+		System.out.println(particles.size());
 
 		List<Integer> deletes = new ArrayList<>();
 		// Compare vertices by location and if they are the same delete them and leave
@@ -303,6 +341,7 @@ public class ParticleSystem {
 
 		Iterator<Particle> iterator = particles.iterator();
 		List<String> delete = new ArrayList<>();
+
 		while (iterator.hasNext()) {
 
 			Particle p = iterator.next();
@@ -315,12 +354,7 @@ public class ParticleSystem {
 
 						if (p.locationX.equals(c.locationX) && p.locationY.equals(c.locationY)
 								&& p.locationZ.equals(c.locationZ)) {
-							/*
-							 * System.out.println(p.locationX + " " + c.locationX + " " + p.locationY + " "
-							 * + c.locationY + " " + p.locationZ + " " + c.locationZ + " ");
-							 * 
-							 * System.out.println(p.particleName); System.out.println(c.particleName);
-							 */
+
 							delete.add(c.particleName);
 
 							for (int i = 0; i < mesh.size(); i++) {
@@ -368,7 +402,7 @@ public class ParticleSystem {
 
 		}
 
-		/// Create Vertex Based on closest Points.
+		// Create Vertex Based on closest Points.
 
 		System.out.println("Creating Vertices");
 
@@ -376,7 +410,7 @@ public class ParticleSystem {
 
 			for (Integer locationx : meshSection.blockLocation) {
 
-				// create a vertex
+				// Create a vertex
 
 				List<Integer> vertex = new ArrayList<>();
 
@@ -390,8 +424,6 @@ public class ParticleSystem {
 
 						Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
 
-						System.out.println(dS);
-
 						if (dS.equals(distance)) {
 
 							vertex.add(locationy);
@@ -402,130 +434,137 @@ public class ParticleSystem {
 
 				}
 
-				System.out.println("====================");
-
 				// Add new Vertex to MeshSection
+
 				meshSection.addGroup(new GeometricGrouping("vertex", vertex));
 
 			}
 
 		}
 
-		// Copy two test particles
+		for (Particle p : particles) {
 
-		testParticles.add(new Particle(1.0,"Test 1",  -330.4, -330.3, -330.2, 0.001 ));
-		testParticles.add(new Particle(1.0,"Test 2", 1104.3, 1104.0, 1102.3, 0.001 ));
-		// Set one Mesh to count the mass or have a different potential
-
-		// mesh.get(mesh.size() /2-50).assignPotential(potentialLibrary.get(1));
-		// mesh.get((mesh.size() /2+50)).assignPotential(potentialLibrary.get(1));
-
-	}
-
-	// Mesh deformity test
-	void iterateMeshPotential() {
-
-		if (iter < mesh.size() - 2) {
-			mesh.get(iter).assignPotential(potentialLibrary.get(0));
-
-			iter++;
-
-			mesh.get(iter).assignPotential(potentialLibrary.get(1));
-		} else {
-
-			mesh.get(iter).assignPotential(potentialLibrary.get(0));
-
-			iter++;
-
-			mesh.get(iter).assignPotential(potentialLibrary.get(1));
-
-			iter = 0;
+			p.setLocationX(p.locationX + displacement);
+			p.setLocationY(p.locationY + displacement);
+			p.setLocationZ(p.locationZ + displacement);
 
 		}
 
+		//meshes.add(new Mesh(mesh, vertices));
+
 	}
 
-	// search all the meshes for common vertices and find the one with the largest
-	// volume and migrate into it.
-	List<Integer> searchNextSection(GeometricGrouping sec) {
-		List<Integer> adjcents = new ArrayList<>();
+	// Find closest
 
-		for (Integer p : sec.blockLocation) {
+	void closest(Particle p) {
 
-			for (int i = 0; i < mesh.size(); i++) {
-				if (!mesh.get(i).equals(sec))
-					for (Integer c : mesh.get(i).blockLocation) {
-						// found an adj
-						if (c == p) {
+		particles.sort(new Comparator<Particle>() {
+			@Override
+			public int compare(Particle m1, Particle m2) {
 
-							adjcents.add(i);
-							break;
+				Double val1 = m1.getDistance(p);
+				Double val2 = m2.getDistance(p);
+				if (val1 > val2) {
+					return 1;
 
-						}
+				}
+				if (val1 < val2) {
+					return -1;
 
-					}
+				}
+				return 0;
+			}
+		});
+
+	}
+
+	// Calculate PIC
+
+	void calculatePIC() {
+
+		
+	
+		
+		for (Particle t : testParticles) {
+	
+           for(Particle p: particles) {p.clearMomentum();}
+		
+			for (Particle m : particles) {
+
+				
+				Double dX = -(t.getX()) + (m.getX());
+				Double dY = -(t.getY()) + (m.getY());
+				Double dZ = -(t.getZ()) + (m.getZ());
+
+				Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+				Double pot = potentialLibrary.get(0).nPotential(dS);
+				//System.out.println(pot+"Pot");
+				dX = (dX / 1) * pot * t.mass;
+				dY = (dY / 1) * pot *  t.mass;
+				dZ = (dZ / 1) * pot *  t.mass;
+
+				m.addMomentumX(dX);
+				m.addMomentumY(dY);
+				m.addMomentumZ(dZ);
 
 			}
+			
+			
+			}
+		
+		
+		for(Particle t1: testParticles) {
+				
+				
+					
+					closest(t1);
+					Double momentumX = 0.0;
+					Double momentumY = 0.0;
+					Double momentumZ = 0.0;
+					
+					
+					//System.out.println(particles.size());
+					for(int i =0; i < 8; i++) {
+						
+					//	particles.get(i).setMomentumX(-particles.get(i).getMomentumX());
+					//	particles.get(i).setMomentumY(-particles.get(i).getMomentumX());
+					//	particles.get(i).setMomentumZ(-particles.get(i).getMomentumX());
+						//System.out.println(particles.get(i).getDistance(t1));
+						
+						
+						
+						momentumX+=particles.get(i).getMomentumX();
+						momentumY+=particles.get(i).getMomentumY();
+						momentumZ+=particles.get(i).getMomentumZ();
+					//	System.out.println(particles.get(i).getMomentumX());
+						
+						
+					}
+					//System.out.println(momentumX+"=======");
+					t1.addMomentumX(-momentumX/t1.mass);
+					t1.addMomentumY(-momentumY/t1.mass);
+					t1.addMomentumZ(-momentumZ/t1.mass);
+				
+			
 
 		}
+		
+		
+		for (int i = 0; i < testParticles.size(); i++) {
 
-		return adjcents;
+			testParticles.get(i).setLocationX(testParticles.get(i).getX() + testParticles.get(i).getMomentumX());
+			testParticles.get(i).setLocationY(testParticles.get(i).getY() + testParticles.get(i).getMomentumY());
+			testParticles.get(i).setLocationZ(testParticles.get(i).getZ() + testParticles.get(i).getMomentumZ());
+		}
+		
+		
+		
 
 	}
 
 	// Calculate Area based on total length
 
-	Double calculateDistances(int location) {
-
-		Integer first = mesh.get(location).blockLocation.get(0);
-		Double totaldS = 0.0;
-
-		for (Integer p : mesh.get(location).blockLocation) {
-
-			Double dS = 0.0;
-			// if not the first one in the array
-			if (p != first) {
-
-				Double dX = -(particles.get(first).getX()) + (particles.get(p).getX());
-				Double dY = -(particles.get(first).getY()) + (particles.get(p).getY());
-				Double dZ = -(particles.get(first).getZ()) + (particles.get(p).getZ());
-
-				// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
-				// This gives me a positive distance between the particle.get(i) particle
-				// and the particle.get(j).
-
-				totaldS += Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
-			}
-
-		}
-
-		return totaldS;
-	}
-
-	void moveMesh(Integer location) {
-
-		List<Integer> adj = searchNextSection(mesh.get(location));
-
-		Double runningDistance = 0.0;
-		Integer biggestMeshSection = 0;
-		for (Integer i : adj) {
-
-			Double totalDistance = calculateDistances(i);
-
-			if (totalDistance > runningDistance) {
-
-				runningDistance = totalDistance;
-				biggestMeshSection = i;
-			}
-		}
-
-		// finally switch
-		System.out.println("New: " + biggestMeshSection + " Old: " + location);
-		mesh.get(location).assignPotential(potentialLibrary.get(0));
-		mesh.get(biggestMeshSection).assignPotential(potentialLibrary.get(1));
-	}
-
-	void calculateMesh() {
+	void calculateMeshes() {
 
 		// iterateMeshPotential() ;
 		// Iterate thru all the vertices and adjust distance based on proximity to mass
@@ -535,114 +574,126 @@ public class ParticleSystem {
 
 		// Iterate thru each vertexes and do a reverse move on the inner vertex based on
 		// mass and distance.
-		for (GeometricGrouping sec : mesh) {
 
-			List<Double> distances = new ArrayList<>();
+		for (Mesh mesh : meshes) {
 
-			for (GeometricGrouping vertex : sec.groups) {
+			for (GeometricGrouping sec : mesh.group) {
 
-				for (Integer p : vertex.blockLocation) {
+				for (GeometricGrouping vertex : sec.groups) {
 
-					Double momentumX = 0.0;
-					Double momentumY = 0.0;
-					Double momentumZ = 0.0;
+					for (Integer p : vertex.blockLocation) {
 
-					for (Integer c : vertex.blockLocation) {
+						Double momentumX = 0.0;
+						Double momentumY = 0.0;
+						Double momentumZ = 0.0;
 
-						if (c != p) {
+						for (Integer c : vertex.blockLocation) {
 
-							Double dX = -(particles.get(p).getX()) + (particles.get(c).getX());
-							Double dY = -(particles.get(p).getY()) + (particles.get(c).getY());
-							Double dZ = -(particles.get(p).getZ()) + (particles.get(c).getZ());
+							if (c != p) {
 
-							// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
-							// This gives me a positive distance between the particle.get(i) particle
-							// and the particle.get(j).
+								Double dX = -(mesh.particles.get(p).getX()) + (mesh.particles.get(c).getX());
+								Double dY = -(mesh.particles.get(p).getY()) + (mesh.particles.get(c).getY());
+								Double dZ = -(mesh.particles.get(p).getZ()) + (mesh.particles.get(c).getZ());
 
-							Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+								// I calculate DS or distance using the Pythagoras formula c^2=a^2+b^2.
+								// This gives me a positive distance between the particle.get(i) particle
+								// and the particle.get(j).
 
-							// Double pot = sec.meshPotential.nPotential(dS);
-							Double pot = 0.0;
-							pot = sec.meshPotential.simpleString(dS);
+								Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
 
-							/*
-							 * if (sec.equals(mesh.get(mesh.size() / 2))) {
-							 * 
-							 * pot = potentialLibrary.get(2).bezierPotential(dS); }
-							 * 
-							 * else { pot = potentialLibrary.get(3).bezierPotential(dS); }
-							 * 
-							 */
-							dX = (dX / 1) * pot * particles.get(c).mass*.001;
-							dY = (dY / 1) * pot * particles.get(c).mass*.001;
-							dZ = (dZ / 1) * pot * particles.get(c).mass*.001;
+								// Double pot = sec.meshPotential.nPotential(dS);
+								Double pot = 0.0;
+								pot = sec.meshPotential.simpleString(dS);
+								// System.out.println(pot);
+								/*
+								 * if (sec.equals(mesh.get(mesh.size() / 2))) {
+								 * 
+								 * pot = potentialLibrary.get(2).bezierPotential(dS); }
+								 * 
+								 * else { pot = potentialLibrary.get(3).bezierPotential(dS); }
+								 * 
+								 */
+								dX = (dX / 1) * pot * mesh.particles.get(c).mass * 1;
+								dY = (dY / 1) * pot * mesh.particles.get(c).mass * 1;
+								dZ = (dZ / 1) * pot * mesh.particles.get(c).mass * 1;
 
-							// I add up the resulting vector to the "running count" of vectors, creating one
-							// general momentum in directions, X, Y, Z
-							// Depending on the result of the Potential function the added vector can have
-							// more or less effect on the total momentum.
+								// I add up the resulting vector to the "running count" of vectors, creating one
+								// general momentum in directions, X, Y, Z
+								// Depending on the result of the Potential function the added vector can have
+								// more or less effect on the total momentum.
 
-							// This way even though there are many forces
-							// acting on particle.get(i) it will tend in the direction of the most forceful
-							// vector.
-							// More information can be found here
-							// http://mathworld.wolfram.com/VectorAddition.html
-							momentumX += dX;
-							momentumY += dY;
-							momentumZ += dZ;
+								// This way even though there are many forces
+								// acting on particle.get(i) it will tend in the direction of the most forceful
+								// vector.
+								// More information can be found here
+								// http://mathworld.wolfram.com/VectorAddition.html
+								momentumX += dX;
+								momentumY += dY;
+								momentumZ += dZ;
 
-							// }
+								// }
 
-						} // End if(c!=p)
-					} // End c
+							} // End if(c!=p)
+						} // End c
 
-					particles.get(p).addMomentumX(momentumX);
-					particles.get(p).addMomentumY(momentumY);
-					particles.get(p).addMomentumZ(momentumZ);
+						mesh.particles.get(p).addMomentumX(momentumX);
+						mesh.particles.get(p).addMomentumY(momentumY);
+						mesh.particles.get(p).addMomentumZ(momentumZ);
 
-				} // End p Loop
+					} // End p Loop
 
-			} // End Vertex Loop
+				} // End Vertex Loop
 
-		} // End Mesh Loop
+			} // End Mesh Loop
 
-		// Calculate Deformation.
-		
-		
-	for(int j =0; j < testParticles.size();j++) {
-			for (int i =0; i<particles.size(); i++) {
+		} // End Meshes Loop
 
-				
-					 
-				
-					Double dX = -(testParticles.get(j).getX()) + (particles.get(i).getX());
-					Double dY = -(testParticles.get(j).getY()) + (particles.get(i).getY());
-					Double dZ = -(testParticles.get(j).getZ()) + (particles.get(i).getZ());
+		// Calculate Attraction between particles
+
+		List<Particle> tempParticles = new ArrayList<>();
+		for (Mesh m : meshes) {
+
+			tempParticles.addAll(m.particles);
+
+		}
+
+		for (Particle p : tempParticles) {
+			Double momentumX = 0.0;
+			Double momentumY = 0.0;
+			Double momentumZ = 0.0;
+
+			for (Particle c : tempParticles) {
+
+				if (!p.equals(c)) {
+
+					Double dX = -(p.getX()) + (c.getX());
+					Double dY = -(p.getY()) + (c.getY());
+					Double dZ = -(p.getZ()) + (c.getZ());
 
 					Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
-					
 
-					
-					Double pot = mesh.get(0).meshPotential.nPotential(dS);
-					
-					Double momentumX = (dX / 1) * pot * testParticles.get(j).mass *2;
-					Double momentumY = (dY / 1) * pot * testParticles.get(j).mass *2;
-					Double momentumZ = (dZ / 1) * pot * testParticles.get(j).mass *2;
-					
+					Double pot = 0.0;
+					pot = meshes.get(0).group.get(0).meshPotential.nPotential(dS);
 
-					
-					particles.get(i).addMomentumX(momentumX);
-					particles.get(i).addMomentumY(momentumY);
-					particles.get(i).addMomentumZ(momentumZ);
+					dX = (dX / 1) * pot * c.mass * .1;
+					dY = (dY / 1) * pot * c.mass * .1;
+					dZ = (dZ / 1) * pot * c.mass * .1;
+
+					momentumX += dX;
+					momentumY += dY;
+					momentumZ += dZ;
 
 				}
-	}
 
-			
-	
- 
+			}
+			p.addMomentumX(momentumX);
+			p.addMomentumY(momentumY);
+			p.addMomentumZ(momentumZ);
+
+		}
+
 		Double totalEnergy = 0.0;
-		for (Particle p : particles) {
+		for (Particle p : tempParticles) {
 
 			Double energy = 0.0;
 
@@ -653,39 +704,60 @@ public class ParticleSystem {
 			totalEnergy += energy / 3;
 		}
 
-		averageEnergy = totalEnergy / particles.size();
+		averageEnergy = totalEnergy / tempParticles.size() + tempParticles.size();
 
 		if (averageEnergy > targetEnergy) {
 
-			decayRatio = 0.99999;
-			for (Particle p : particles) {
+			decayRatio = 1.0;// 0.99999;
+			for (Particle p : tempParticles) {
+				p.setDecay(decayRatio);
+			}
+
+			for (Particle p : testParticles) {
 				p.setDecay(decayRatio);
 			}
 
 		} else if (averageEnergy < targetEnergy) {
-			decayRatio = 1.00001;
-			for (Particle p : particles) {
+			decayRatio = 1.0;// 1.00001;
+			for (Particle p : tempParticles) {
+				p.setDecay(decayRatio);
+			}
+
+			for (Particle p : testParticles) {
 				p.setDecay(decayRatio);
 			}
 
 		}
-		
-		
-		testParticles.get(0).setLocationX(testParticles.get(0).getX()+0.01);
-		testParticles.get(0).setLocationY(testParticles.get(0).getY()+0.01);
-		testParticles.get(0).setLocationZ(testParticles.get(0).getZ()+0.01);
-		
 
-		testParticles.get(1).setLocationX(testParticles.get(1).getX()-0.01);
-		testParticles.get(1).setLocationY(testParticles.get(1).getY()-0.01);
-		testParticles.get(1).setLocationZ(testParticles.get(1).getZ()-0.01);
+		// Calculate motion of Particles
 
-		for (int i = 0; i < particles.size(); i++) {
+		for (int i = 0; i < tempParticles.size(); i++) {
 
-			particles.get(i).setLocationX(particles.get(i).getX() + particles.get(i).getMomentumX());
-			particles.get(i).setLocationY(particles.get(i).getY() + particles.get(i).getMomentumY());
-			particles.get(i).setLocationZ(particles.get(i).getZ() + particles.get(i).getMomentumZ());
+			tempParticles.get(i).setLocationX(tempParticles.get(i).getX() + tempParticles.get(i).getMomentumX());
+			tempParticles.get(i).setLocationY(tempParticles.get(i).getY() + tempParticles.get(i).getMomentumY());
+			tempParticles.get(i).setLocationZ(tempParticles.get(i).getZ() + tempParticles.get(i).getMomentumZ());
 		}
+
+		// Copy back
+
+		for (Particle p : tempParticles) {
+
+			for (Mesh m : meshes) {
+
+				for (Particle par : m.particles) {
+
+					if (par.getParticleName().contentEquals(p.particleName)) {
+
+						par = p;
+						break;
+					}
+
+				}
+
+			}
+
+		}
+
 	}
 
 	Double getEnergy() {
@@ -715,10 +787,19 @@ public class ParticleSystem {
 			BufferedWriter br = new BufferedWriter(fr);
 
 			// Write the amount of particles in the system , to indicate start of new dump.
-			br.write((particles.size()+testParticles.size()) + "\n");
-			 br.write("\n");
 
-			for (Particle p : particles) {
+			int totalSize = 0;
+
+			for (Mesh m : meshes) {
+				totalSize += m.particles.size();
+			}
+			
+			totalSize +=/*particles.size() */+ testParticles.size();
+
+			br.write(totalSize + "\n");
+			br.write("\n");
+
+	/*	for (Particle p : particles) {
 
 				// Append into file particle per particle all separated by white space.
 
@@ -727,14 +808,26 @@ public class ParticleSystem {
 						+ p.getY() + " " // Write Y location
 						+ p.getZ() + "\n"); // Write Z location
 
-			}
-			
-			for(Particle p: testParticles) {
+			}  */
+
+			for (Particle p : testParticles) {
 				br.write(p.getColor() + " " // Write particle color
 						+ p.getX() + " " // Write X location
 						+ p.getY() + " " // Write Y location
 						+ p.getZ() + "\n"); // Write Z location
-				
+
+			}
+
+			for (Mesh m : meshes) {
+
+				for (Particle p : m.particles) {
+					br.write(p.getColor() + " " // Write particle color
+							+ p.getX() + " " // Write X location
+							+ p.getY() + " " // Write Y location
+							+ p.getZ() + "\n"); // Write Z location
+
+				}
+
 			}
 
 			// Close all opened file writing mechanisms.
