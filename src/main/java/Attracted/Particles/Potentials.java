@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealLinearOperator;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
 //The reason I'm writing this class is to have a dedicated class that holds all of the potentials.
 //This will make my Particle Systems code look cleaner and will give me a place to store any potential
 //related variables.
@@ -33,11 +39,8 @@ public class Potentials {
 //Simple Spring potential will give you a simple gradient based on distance from target distance
 
 	public Double simpleString(Double dS) {
-	
 
-
-		Double	difference = Math.abs(targetDistance) - dS;
-	
+		Double difference = Math.abs(targetDistance) - dS;
 
 		// targetDistance+=difference*0.000001;
 
@@ -182,21 +185,44 @@ public class Potentials {
 	// have more force and more motion I inverse the potential at some
 	// arbitrary distance to cause the particles to repel each other.
 
-	
 	// this will cause the particles to have a non-linear attraction to each other.
 
 	public Double nPotential(Double distance) {
 
 		Double newton = 0.0;
-		
-	
-		if(distance>1.0) {
-		newton = 1 / Math.pow(distance, 2);// (G)Mm/R^2
+
+		// Making sure Square does not go to infinity at distance = 0 ;
+		if (distance > 1.0) {
+
+			newton = 1 / Math.pow(distance, 2);// (G)Mm/R^2
 
 		}
-		
+
 		return newton;
 	}
+
+	// Power Decay
+	// A potential that decreases with distance, you have to input the loss
+	// potential.
+
+	public Double pdPotential(Double mass, Double loss, Double distance) {
+
+		// System.out.println("mass: "+ mass +" loss: "+loss+" distance: "+distance);
+		// System.out.println("Pow: "+ Math.pow(.99, 5));
+		return mass * Math.pow(loss, distance);
+	}
+
+	// Utility function that gets normalization
+
+
+	// Utility function that gets multiplied Vector
+	
+
+	
+	
+
+
+
 
 	// ljPotential is a simple Potential used in Molecular Dynamics which will repel
 	// a particle as it gets close another particle.

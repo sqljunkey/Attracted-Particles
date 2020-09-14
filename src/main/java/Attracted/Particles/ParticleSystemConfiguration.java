@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 
 public class ParticleSystemConfiguration {
 
-	//Particle mass
+	// Particle mass
 	private int mass = 0;
-	
+
 	// Number of particles
 	private int particleCount = 0;
 
@@ -29,7 +29,6 @@ public class ParticleSystemConfiguration {
 	// Difference between potentials
 
 	private Double diff = 0.0;
-	
 
 	// Dump interval
 
@@ -37,21 +36,21 @@ public class ParticleSystemConfiguration {
 
 	// Animation file
 	private String dumpFilename = "";
-	
-	//Target Energy
-	
-	private Double targetEnergy =0.0;
+
+	// Target Energy
+
+	private Double targetEnergy = 0.0;
 
 	// Potential Curve
 	List<List<Point>> points = new ArrayList<>();
-	
-	//Potential Spring distances
+
+	// Potential Spring distances
 	List<Double> springs = new ArrayList<>();
 
 	// Read script into configuration
 	public void readFile(String filename) {
-		
-		//Create isPoint variable to check if item is a point
+
+		// Create isPoint variable to check if item is a point
 		Boolean isPoint = false;
 
 		try {
@@ -60,10 +59,9 @@ public class ParticleSystemConfiguration {
 			BufferedReader reader = new BufferedReader(new FileReader(filename));
 			String line;
 
-			
 			// Particle Mass Pattern
 			Pattern particleMass = Pattern.compile("mass(\\s+)?(\\d+)");
-			
+
 			// Particle Count Pattern
 			Pattern particleCountPattern = Pattern.compile("particle(\\s+)?count(\\s+)?(\\d+)");
 
@@ -75,22 +73,21 @@ public class ParticleSystemConfiguration {
 
 			// Particle Diff Pattern
 			Pattern diffPattern = Pattern.compile("diff(\\s+)?([-+]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?)");
-			
+
 			// Particle Diff Pattern
 			Pattern springPattern = Pattern.compile("spring(\\s+)?([-+]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?)");
-			
+
 			// Particle Target Pattern
-	        Pattern targetPattern = Pattern.compile("target(\\s+)?([-+]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?)");
+			Pattern targetPattern = Pattern.compile("target(\\s+)?([-+]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?)");
 
 			// Particle Dump Interval Pattern
 			Pattern dumpPattern = Pattern.compile("dump(\\s+)?(\\d+)");
 
 			// Particle Dump FileName Pattern
 			Pattern dumpFilePattern = Pattern.compile("dumpfile(\\s+)?(\\w+\\.xyz)");
-			
+
 			// Particle Curve Points
-			Pattern pointPattern = Pattern.compile(
-					"point(\\s+)?([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)(\\s+)?,"
+			Pattern pointPattern = Pattern.compile("point(\\s+)?([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)(\\s+)?,"
 					+ "(\\s+)?([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
 
 			// Matcher
@@ -98,10 +95,9 @@ public class ParticleSystemConfiguration {
 
 			// Read until the file is empty
 			while ((line = reader.readLine()) != null) {
-				
-				
-				//Skip any commented Lines
-				if(line.contains("#")) {
+
+				// Skip any commented Lines
+				if (line.contains("#")) {
 					continue;
 				}
 
@@ -133,7 +129,7 @@ public class ParticleSystemConfiguration {
 
 					diff = Double.parseDouble(match.group(2));
 				}
-				
+
 				// Find decay Match
 				match = targetPattern.matcher(line);
 				if (match.find()) {
@@ -154,39 +150,40 @@ public class ParticleSystemConfiguration {
 
 					dumpFilename = match.group(2);
 				}
-				
+
 				// Find Spring Match
 				match = springPattern.matcher(line);
 				if (match.find()) {
 
 					springs.add(Double.parseDouble(match.group(2)));
 				}
-				
+
 				// Find point Match, and then read all points until there is a break
 				match = pointPattern.matcher(line);
 				if (match.find()) {
 
-					//add a new point Array if this is the first time we encountered a point
+					// add a new point Array if this is the first time we encountered a point
 					//
-					if(isPoint ==false) {
-						
-					    points.add(new ArrayList<Point>());
-						isPoint =true;
+					if (isPoint == false) {
+
+						points.add(new ArrayList<Point>());
+						isPoint = true;
 					}
 					Double x = Double.parseDouble(match.group(2));
 					Double y = Double.parseDouble(match.group(6));
-					
-					points.get(points.size()-1).add(new Point(x,y));
-				}else {
-					
-					//If there is a new line or anything else that breaks the points cycle this will create a new points 
-					//Array.
-					isPoint =false;
+
+					points.get(points.size() - 1).add(new Point(x, y));
+				} else {
+
+					// If there is a new line or anything else that breaks the points cycle this
+					// will create a new points
+					// Array.
+					isPoint = false;
 				}
-				
+
 				match = particleMass.matcher(line);
-				if(match.find()) {
-					
+				if (match.find()) {
+
 					mass = Integer.parseInt(match.group(2));
 				}
 
@@ -200,92 +197,80 @@ public class ParticleSystemConfiguration {
 		}
 
 	}
-	
-	
-	//Getters
-	
-	
-	
-	//Print all Loaded Values
+
+	// Getters
+
+	// Print all Loaded Values
 	void printValues() {
-		
-		System.out.println("Target: "+ targetEnergy);
-		System.out.println("Particle Mass: "+ mass);
-		System.out.println("Particle Count: "+particleCount );
-		System.out.println("Particle Spread: "+spread );
-		System.out.println("Steps: "+steps );
-		System.out.println("Dump Interval: "+dumpInterval );
-		System.out.println("Dump File: "+dumpFilename );
-		
-		for(List<Point> point: points) {
-			
+
+		System.out.println("Target: " + targetEnergy);
+		System.out.println("Particle Mass: " + mass);
+		System.out.println("Particle Count: " + particleCount);
+		System.out.println("Particle Spread: " + spread);
+		System.out.println("Steps: " + steps);
+		System.out.println("Dump Interval: " + dumpInterval);
+		System.out.println("Dump File: " + dumpFilename);
+
+		for (List<Point> point : points) {
+
 			System.out.println(" ");
-		for(Point p: point) {
-			
-			System.out.println("Points:"+p.getX()+" "+p.getY());
+			for (Point p : point) {
+
+				System.out.println("Points:" + p.getX() + " " + p.getY());
+			}
 		}
-		}
-		
-		for(Double spring: springs) {
-			
-			System.out.println("Spring: "+spring);
-			
+
+		for (Double spring : springs) {
+
+			System.out.println("Spring: " + spring);
+
 		}
 	}
-
 
 	public int getParticleCount() {
 		return particleCount;
 	}
 
-
 	public double getSpread() {
 		return spread;
 	}
-
 
 	public Double getSteps() {
 		return steps;
 	}
 
-
 	public Double getDiff() {
 		return diff;
 	}
-
 
 	public int getDumpInterval() {
 		return dumpInterval;
 	}
 
-
 	public String getDumpFilename() {
 		return dumpFilename;
 	}
-	
+
 	public int getMass() {
-		
+
 		return mass;
-		
+
 	}
-	
+
 	public Double getTargetEnergy() {
-		
+
 		return targetEnergy;
 	}
-	
-	public List<List<Point>> getPoints(){
-		
+
+	public List<List<Point>> getPoints() {
+
 		return points;
-		
+
 	}
-	
-	public List<Double> getSprings(){
-		
+
+	public List<Double> getSprings() {
+
 		return springs;
 	}
-	
-	
-	
 
 }

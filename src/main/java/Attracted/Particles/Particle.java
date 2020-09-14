@@ -19,6 +19,8 @@ public class Particle {
 	Double momentumY;
 	Double momentumZ;
 
+	List<Double> energies = new ArrayList<>();
+	
 	Double decayRatio;
 
 	String particleColor;
@@ -129,7 +131,7 @@ public class Particle {
     }
 	public void addMomentumX(Double momentumX) {
 
-		this.momentumX = this.momentumX* decayRatio  + momentumX*0.001;
+		this.momentumX = this.momentumX* decayRatio  + momentumX;
 
 	}
 
@@ -140,7 +142,7 @@ public class Particle {
 	
 	public void addMomentumY(Double momentumY) {
 
-		this.momentumY = this.momentumY* decayRatio  + momentumY*0.001;
+		this.momentumY = this.momentumY* decayRatio  + momentumY;
 	}
 
 	public Double getMomentumZ() {
@@ -149,7 +151,7 @@ public class Particle {
 
 	public void addMomentumZ(Double momentumZ) {
 
-		this.momentumZ = this.momentumZ* decayRatio  + momentumZ*0.001;
+		this.momentumZ = this.momentumZ* decayRatio  + momentumZ;
 
 	}
 
@@ -170,6 +172,45 @@ public class Particle {
 		this.decayRatio = decayRatio;
 	}
 
+	public double[] getVector() {
+		
+		double []vector = {this.locationX, this.locationY, this.locationZ};
+		
+		return vector;
+		
+			
+	}
+	
+	public List<Double> getVector(Particle particle){
+		
+		//create vector array
+		
+		List<Double> vector = new ArrayList<>();
+		
+		//Calculate distances between this particle and the provided particle for each axis.
+		
+		Double dX = -(this.getX()) + (particle.getX());
+		Double dY = -(this.getY()) + (particle.getY());
+		Double dZ = -(this.getZ()) + (particle.getZ());
+		
+		
+		
+		
+		//Add to Vector 
+			
+		vector.add(dX);
+		vector.add(dY);
+		vector.add(dZ);
+		
+		
+		return vector; 
+		
+		
+	}
+	
+	
+
+	
 	public Point3D getLocation() {
 
 		return new Point3D(getX(), getY(), getZ());
@@ -186,6 +227,56 @@ public class Particle {
 		return dS; 
 		
 	}
+	
+	
+	public List<Double> getGaugedDistance(Particle p, Double epsilon) {
+		
+		List<Double> distances = new ArrayList<>();
+		
+		Double dX = -p.getX() + (this.getX());
+		Double dY = -p.getY() + (this.getY());
+		Double dZ = -p.getZ() + (this.getZ());
+		
+		//No Gauge
+		Double dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+		
+		distances.add(dS);
+		//Gauge in X direction
+		
+		 dX = -p.getX()+epsilon + (this.getX());
+		 dY = -p.getY() + (this.getY());
+		 dZ = -p.getZ() + (this.getZ());
+		
+		dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+		distances.add(dS);
+		
+		//Gauge in Y direction
+		
+		 dX = -p.getX() + (this.getX());
+		 dY = -p.getY()+epsilon + (this.getY());
+		 dZ = -p.getZ() + (this.getZ());
+		
+		dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+		distances.add(dS);
+		
+		//Gauge in Z direction
+		 dX = -p.getX() + (this.getX());
+		 dY = -p.getY() + (this.getY());
+		 dZ = -p.getZ()+epsilon + (this.getZ());
+		dS = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2) + Math.pow(dZ, 2));
+		distances.add(dS);
+		
+		
+		
+		return distances; 
+		
+	}
+	
+	
+	
+	
+	
+	
 	
 	public void  clearMomentum() {
 		
@@ -210,5 +301,37 @@ public class Particle {
 		return point;
 
 	}
+
+	
+	public List<Double> getEnergies() {
+		return energies;
+	}
+
+	public void addEnergy(Double energy) {
+		energies.add(energy);
+	}
+	
+	public void clearEnergy() {
+		
+		energies.clear();
+		
+	}
+
+	public Double getEnergySum() {
+		
+		Double sum = 0.0;
+		
+		
+		for(Double energy : energies) {
+			
+			sum+= energy;
+			
+		}
+		
+		return sum;
+		
+	}
+	
+
 
 }

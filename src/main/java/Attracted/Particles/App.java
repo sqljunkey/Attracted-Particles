@@ -135,8 +135,7 @@ public class App {
 			if(updateEnergy>cfg.getSteps() * .000001 ) {
 				
 				updateEnergy =0;
-				System.out.println("Energy: "+system.getEnergy());
-				System.out.println("Decay Ratio: "+system.getDecay());
+			
 				//system.iterateMeshPotential();
 			}
 			
@@ -156,7 +155,7 @@ public class App {
 			
 			//system.calculateMeshes();
 			
-			system.calculatePIC();
+			system.calculateMassDistribution();
 			//system.calculateTwoParticleSets();
 			// Increase the trackingInterval and check to see if it is higher than the
 			// dumpInteval and if it is dump the particle positions onto a file.
@@ -177,9 +176,9 @@ public class App {
 	public static void main(String[] args) {
 		// Test Bezier Curve
 		Potentials p = new Potentials(.001);
+		
 
-
-
+		
 		
 		
 		ParticleSystemConfiguration cfg = new ParticleSystemConfiguration();
